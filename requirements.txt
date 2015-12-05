@@ -1,0 +1,5 @@
+numpy==1.10.1
+scipy==0.16.1
+six==1.10.0
+tensorflow==0.5.0
+wheel==0.24.0

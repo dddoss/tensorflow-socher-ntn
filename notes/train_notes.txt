@@ -1,0 +1,22 @@
+Notes for code/train.m in Socher (2013)
+
+lines: comments
+
+1-5: Clear variables, load parameters and dependencies
+7-19: Determine from parameters what cost function is to be used and its derivative (defaults to tanh)
+21-25: Determine from parameters what database to be used (defaults to Wordnet)
+28-48: Load the list of entities and relations from the database into memory. For this to work, the current path of
+    matlab must be set to the "code" folder.
+50-64: Load the training data (entries delimited by newlines, entity/relation/entity triples delimited by tabs) into a matrix
+66-69: Load the precalculated word embeddings into memory
+75-95: Perform "Gradient Checking" (http://deeplearning.stanford.edu/wiki/index.php/Gradient_checking_and_advanced_optimization), returning if it fails
+       The code for this is in code/toolbox/checkNumericalGradient.m
+97-100: Set options to be used in the minimizing functions
+104-126: Training loop:
+    104: Run params.num_iter training iterations on the data
+    105: Take a random sample of the data according to the batch size (params.batch_size <= # of training points)
+    107-108: Load the actual relation and entities into data_batch
+    110: Load a random set of potential entities of the same length into data_batch.e3 (for corruption purposes)
+    112: Randomly decide whether to corrupt left or right entries of
+    113/115: Use l-bfgs (defined in code/toolbox/minFunc/lbfgs.m) to minimize the cost function with respect to the parameters theta.
+    119-125: output and save the cost and parameters sometimes
