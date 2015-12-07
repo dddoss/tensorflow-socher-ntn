@@ -5,18 +5,30 @@ import tensorflow as tf
 # Training
 
 class NTN:
-	def __init__(self, parameters):
+	def __init__(self, hyperparameters):
 
-		# for r in relations:
+        # self.num_words           = hyperparameters['num_words']
+        self.d = d          = hyperparameters['embedding_size']
+        self.num_entities   = hyperparameters['num_entities']
+        self.num_relations  = hyperparameters['num_relations']
+        self.batch_size     = hyperparameters['batch_size']
+        self.k = k          = hyperparameters['slice_size']
+        # self.word_indices        = hyperparameters['word_indices']
+        # self.activation_function = hyperparameters['activation_function']
+        self.lamda          = hyperparameters['lamda']
+
+        # a 2D tensor with entity vectors. Someone needs to make this
+        # and somehow we need to be able to index into it
+		self.E = Entities()
+
+		for r in range(self.num_relations):
 
 			W[r] = tf.Variable([])
-			V[r] = tf.Variable([])
-			b[r] = tf.Variable([])	# each of these are dicts? could also be extra-D tensors
-									# could also do "with tf.name_scope('hidden1') as scope:" scope each relation type
+			V[r] = tf.Variable(tf.zeros([2 * d, k]))
+			b[r] = tf.Variable(tf.zeros([1, k]))
+            U[r] = tf.Variable(tf.ones([k, 1]))
 
-		# We may need this:
-
-		E = # a 2D tensor with every single entity vector
+            W[i] = np.random.random([d, d, k]) * 2 * r - r
 
 
 
@@ -57,9 +69,18 @@ class NTN:
 
 		contrastive_max_margin = max(0, 1-g(true_triplet)+g(corrupt_triplet)) # + regularization term
 
+		train_step = tf.train.AdagradOptimizer(0.01).minimize(contrastive_max_margin)
+
+
 
 	def train(self):
 
-		train_step = tf.train.AdagradOptimizer(0.01).minimize(contrastive_max_margin)
+		init = tf.initialize_all_variables()
+
+		with tf.Session() as sess:
+
+			sess.run(init)
+
+
 
 
