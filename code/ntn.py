@@ -15,7 +15,7 @@ class NTN:
         self.k = k          = hyperparameters['slice_size']
         # self.word_indices        = hyperparameters['word_indices']
         # self.activation_function = hyperparameters['activation_function']
-        self.lambda          = hyperparameters['lambda']
+        self.regularization = hyperparameters['lambda']
 
         # a 2D tensor with entity vectors. Someone needs to make this
         # and somehow we need to be able to index into it
@@ -71,4 +71,4 @@ if name=="__main__":
             "save_per_iter":params.save_per_iter,
             "gradient_checking":params.gradient_checking
         }
-    ntn = NTN(hyperparameters) 
+    ntn = NTN(hyperparameters)
