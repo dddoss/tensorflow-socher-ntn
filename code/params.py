@@ -27,7 +27,7 @@ elif act_fun_num==1:
 elif act_fun_num==2:
     act_func = lambda x: x
     act_deriv = lambda x: 1
-in_tensor_keep_normal = 0
+in_tensor_keep_normal = False
 
 save_per_iter=100
 gradient_checking = True
