@@ -4,10 +4,12 @@
 
 import params
 import scipy.io as sio
+import numpy as np
 
 entities_string='/entities.txt'
 relations_string='/relations.txt'
 embeds_string='/initEmbed.mat'
+training_string='/train.txt'
 
 #input: path of dataset to be used
 #output: python list of entities in dataset
@@ -35,11 +37,11 @@ def load_init_embeds(data_path=params.data_path):
 def load_embeds(file_path):
     mat_contents = sio.loadmat(file_path)
     words = mat_contents['words']
-    we = mat_contents['we']
+    we = mat_contents['We']
     word_vecs = {str(words[0][i][0]) : [we[j][i] for j in range(params.embedding_size)] for i in range(len(words[0]))}
     return word_vecs
 
 def load_training_data(data_path=params.data_path):
     training_file = open(data_path+training_string)
     training_data = [line.split('\t') for line in training_file.read().strip().split('\n')]
-    return training_data
+    return np.array(training_data)
