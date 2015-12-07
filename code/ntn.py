@@ -7,18 +7,18 @@ import tensorflow as tf
 class NTN:
 	def __init__(self, hyperparameters):
 
-        # self.num_words           = hyperparameters['num_words']
-        self.d = d          = hyperparameters['embedding_size']
-        self.num_entities   = hyperparameters['num_entities']
-        self.num_relations  = hyperparameters['num_relations']
-        self.batch_size     = hyperparameters['batch_size']
-        self.k = k          = hyperparameters['slice_size']
-        # self.word_indices        = hyperparameters['word_indices']
-        # self.activation_function = hyperparameters['activation_function']
-        self.lamda          = hyperparameters['lamda']
+		# self.num_words           = hyperparameters['num_words']
+		self.d = d          = hyperparameters['embedding_size']
+		self.num_entities   = hyperparameters['num_entities']
+		self.num_relations  = hyperparameters['num_relations']
+		self.batch_size     = hyperparameters['batch_size']
+		self.k = k          = hyperparameters['slice_size']
+		# self.word_indices        = hyperparameters['word_indices']
+		# self.activation_function = hyperparameters['activation_function']
+		self.lamda          = hyperparameters['lamda']
 
-        # a 2D tensor with entity vectors. Someone needs to make this
-        # and somehow we need to be able to index into it
+		# a 2D tensor with entity vectors. Someone needs to make this
+		# and somehow we need to be able to index into it
 		self.E = Entities()
 
 		for r in range(self.num_relations):
@@ -26,9 +26,9 @@ class NTN:
 			W[r] = tf.Variable([])
 			V[r] = tf.Variable(tf.zeros([2 * d, k]))
 			b[r] = tf.Variable(tf.zeros([1, k]))
-            U[r] = tf.Variable(tf.ones([k, 1]))
+			U[r] = tf.Variable(tf.ones([k, 1]))
 
-            W[i] = np.random.random([d, d, k]) * 2 * r - r
+			W[i] = np.random.random([d, d, k]) * 2 * r - r
 
 
 
