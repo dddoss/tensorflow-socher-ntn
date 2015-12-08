@@ -22,11 +22,11 @@ class NTN:
         self.E = Entities()
 
         for r in range(self.num_relations):
-            W[r] = tf.Variable([])
+            W[r] = tf.Variable(tf.truncated_normal([d, d, k])) # W[i] = np.random.random([d, d, k]) * 2 * r - r
             V[r] = tf.Variable(tf.zeros([2 * d, k]))
             b[r] = tf.Variable(tf.zeros([1, k]))
             U[r] = tf.Variable(tf.ones([k, 1]))
-            W[i] = np.random.random([d, d, k]) * 2 * r - r
+
 
     # e1 and e2 are d-dimensional entity vectors. W is a dxdxk tensor.
     def bilinearTensorProduct(self, e1, W, e2):
@@ -52,9 +52,18 @@ class NTN:
         train_step = tf.train.AdagradOptimizer(0.01).minimize(contrastive_max_margin)
 
     def train(self):
-        init = tf.initialize_all_variables()
+
         with tf.Session() as sess:
+        	init = tf.initialize_all_variables()
             sess.run(init)
+
+            for i in range(iterations):
+
+ 	           sess.run(train_step, feed_dict={     })
+
+
+
+
 
 if name=="__main__":
     hyperparameters = {"data_path":params.data_path,
@@ -65,8 +74,6 @@ if name=="__main__":
             "embedding_size":params.embedding_size,
             "slice_size":params.slice_size,
             "lambda":params.reg_parameter,
-            "activation_function":params.act_func,
-            "activation_derivative":params.act_deriv,
             "in_tensor_keep_normal":params.in_tensor_keep_normal,
             "save_per_iter":params.save_per_iter,
             "gradient_checking":params.gradient_checking

@@ -17,16 +17,7 @@ embedding_size = 100
 slice_size = 3 #depth of tensor for each relation
 
 reg_parameter = 0.0001 #parameter \lambda used in L2 normalization
-act_func_num = 0 # 0 - tanh, 1 - sigmoid, 2 - identity
-if act_func_num==0:
-    act_func = lambda x: math.tanh(x)
-    act_deriv = lambda x: 1-x**2
-elif act_fun_num==1:
-    act_func = lambda x: 1 / (1 + math.exp(-x))
-    act_deriv = lambda x: x*(1-x)
-elif act_fun_num==2:
-    act_func = lambda x: x
-    act_deriv = lambda x: 1
+
 in_tensor_keep_normal = False
 
 save_per_iter=100
