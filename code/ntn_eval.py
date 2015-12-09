@@ -18,10 +18,7 @@ def getThresholds(W, V, b, U, word_vectors):
     entity_stack = tf.Variable(tf.concat(0, [e1, e2]))
     
     for k in range(params.slice_size):
-        # need equivalent for dot product
-        dev_scores[i, 0] += U[rel][k, 0] * \
-        (tf.reduce_sum(batch_matmul(tf.transpose(e1), tf.reduce_sum(batch_matmul(W[rel][:, :, k], e2)))) +
-        tf.reduce_sum(batch_matmul(tf.transpose(V[rel][:, k]), entity_stack)) + b[rel][0, k])
+        dev_scores[i, 0] += U[rel][k, 0] * tf.mul(tf.transpose(e1), tf.mul(W[rel][:, :, k], e2)) + tf.mul(tf.transpose(V[rel][:, k]), entity_stack) + b[rel][0, k])
 
     score_min = tf.reduce_min(dev_scores)
     score_max = tf.reduce_max(dev_scores)
@@ -76,10 +73,7 @@ def getPredictions(W, V, b, U, word_vectors):
 
     # calculate prediction score for ith example
     for k in range(params.slice_size):
-        # need equivalent for dot product
-        dev_scores[i, 0] += U[rel][k, 0] * \
-        (tf.reduce_sum(batch_matmul(tf.transpose(e1), tf.reduce_sum(batch_matmul(W[rel][:, :, k], e2)))) +
-        tf.reduce_sum(batch_matmul(tf.transpose(V[rel][:, k]), entity_stack)) + b[rel][0, k])
+        test_score += U[rel][k, 0] * tf.mul(tf.transpose(e1), tf.mul(W[rel][:, :, k], e2)) + tf.mul(tf.transpose(V[rel][:, k]), entity_stack) + b[rel][0, k])
 
         # get labels from theshold scores
         if(test_score <= best_thresholds[rel, 0]):
