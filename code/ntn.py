@@ -35,30 +35,34 @@ def g((e1, R, e2)):
 #    contrastive_max_margin = max(0.0, 1.0-g(true_triplet)+g(corrupt_triplet)) # + regularization term
 #    train_step = tf.train.AdagradOptimizer(0.01).minimize(contrastive_max_margin)
 
-#returns a (batch_size*corrupt_size, 1) vector corresponding to g(T_c^i)-g(T^i) for all i
+#returns a (batch_size*corrupt_size, 2) vector corresponding to [g(T^i), g(T_c^i)] for all i
 def inference(batch_placeholder, corrupt_placeholder, init_word_embeds,\
-        entity_to_wordvec, num_entities, num_relations, slice_size):
+        entity_to_wordvec, num_entities, num_relations, slice_size, batch_size):
     #TODO: We need to check the shapes and axes used here!
     d = 100 #embed_size
     k = slice_size
-    E = tf.Variable(init_word_embeds, shape=(len(init_word_embeds), d)) #d=embed size
+    num_words = len(init_word_embeds)
+    E = tf.Variable(init_word_embeds, shape=(num_words, d)) #d=embed size
     W = [tf.Variable(tf.truncated_normal([d,d,k])) for r in range(len(num_relations))]
     V = [tf.Variable(tf.zeros([2 * d, k])) for r in range(len(num_relations))]
     b = [tf.Variable(tf.zeros([1, k])) for r in range(len(num_relations))]
     U = [tf.Variable(tf.ones([k, 1])) for r in range(len(num_relations))]
 
+    ent2words = [[0]*num_words for i in range(num_entities)]
+    for i in range(len(entity_to_wordvec)):
+        for j in entity_to_wordvec[i]:
+            ent2words[i][j] = 1.0/len(entity_to_wordvec[i])
+    ent2words_tensor = tf.Constant(ent2words) #each row i cooresponds to entity i; e2w_tensor[i]*E=entity embedding
 
     e1, R, e2, e3 = tf.split(1, 4, batch_placeholder) #TODO: should the split dimension be 0 or 1? 
     #convert entity word index reps to embeddings... how?
-    e1v = tf.reduce_mean(tf.gather(E, e1), 0)
-    e2v = tf.reduce_mean(tf.gather(E, e2), 0)
-    e3v = tf.reduce_mean(tf.gather(E, e3), 0)
-
+    e1v = tf.pack([tf.matmul(E, tf.split(0, batch_size, tf.gather(ent2words_tensor, e1v)) for i in range(batch_size)]
+    e2v = tf.pack([tf.matmul(E, tf.split(0, batch_size, tf.gather(ent2words_tensor, e2v)) for i in range(batch_size)]
+    e3v = tf.pack([tf.matmul(E, tf.split(0, batch_size, tf.gather(ent2words_tensor, e3v)) for i in range(batch_size)]
     
     #e1v, e2v, e3v should be (batch_size * 100) tensors by now
     for r in range(num_relations):
-        #get e1, e2, e3 cooresponding to indices where R[i] = r
-        #TODO... uhh, stuff
+        #calc g(e1, R, e2) and g(e1, R, e3) for each relation
 
             
 def loss(infer_results):
