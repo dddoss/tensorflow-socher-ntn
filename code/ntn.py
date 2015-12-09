@@ -14,7 +14,6 @@ class NTN:
         self.batch_size     = hyperparameters['batch_size']
         self.k = k          = hyperparameters['slice_size']
         # self.word_indices        = hyperparameters['word_indices']
-        # self.activation_function = hyperparameters['activation_function']
         self.regularization = hyperparameters['lambda']
 
         # a 2D tensor with entity vectors. Someone needs to make this
@@ -34,7 +33,7 @@ class NTN:
         W = tf.reshape(W, [d, d*k])
         temp = tf.matmul(e1, W)
         temp = tf.reshape(temp, [k, d])
-        e2 = tf.reshape(e2, [d, 1])
+        e2 = tf.reshape(e2, [d, 1])x
         temp = tf.matmul(temp, e2)
         return temp
 
@@ -45,6 +44,36 @@ class NTN:
         temp = tf.tanh(temp)
         temp = tf.matmul(U, temp)
         return temp
+
+    # E1 and E2 are matrices of b columns of d-dim entity vectors. W is a dxdxk tensor.
+    def BATCH_bilinearTensorProduct(self, E1, W, E2):
+
+        e1 = tf.reshape(e1, [d, b, 1])
+        W = tf.reshape(W, [d*k, d])
+
+        temp = tf.matmul(e1, W)
+        temp = tf.reshape(temp, [k, d])
+        e2 = tf.reshape(e2, [d, 1])
+        temp = tf.matmul(temp, e2)
+        return temp
+
+    def BATCH_g(self, (e1, R, e2)):
+
+        temp1 = bilinearTensorProduct(e1, W, e2)
+        temp2 = tf.matmul(V, tf.concat(0, [e1, e2]))
+        temp = tf.add(temp1, temp2, b)
+        temp = tf.tanh(temp)
+        temp = tf.matmul(U, temp)
+        return temp
+
+
+
+
+
+
+
+
+
 
     # LOSS
     def loss(self, batch):
@@ -60,6 +89,16 @@ class NTN:
             for i in range(iterations):
 
  	           sess.run(train_step, feed_dict={     })
+
+
+
+
+
+
+
+
+
+
 
 
 
