@@ -15,13 +15,13 @@ def getThresholds(W, V, b, U, word_vectors):
         e1 = tf.reshape(entity_vectors[:, dev_data[i,0]], [params.embedding_size, 1])
         e2 = tf.reshape(entity_vectors[:, dev_data[i,2]], [params.embedding_size, 1])
 
-    entity_stack = tf.concat(0, [e1, e2])
+    entity_stack = tf.Variable(tf.concat(0, [e1, e2]))
     
     for k in range(params.slice_size):
         # need equivalent for dot product
         dev_scores[i, 0] += U[rel][k, 0] * \
-        (batch_matmul(e1.T, np.dot(W[rel][:, :, k], e2)) +
-        batch_matmul(V[rel][:, k].T, entity_stack) + b[rel][0, k])
+        (tf.reduce_sum(batch_matmul(tf.transpose(e1), tf.reduce_sum(batch_matmul(W[rel][:, :, k], e2)))) +
+        tf.reduce_sum(batch_matmul(tf.transpose(V[rel][:, k]), entity_stack)) + b[rel][0, k])
 
     score_min = tf.reduce_min(dev_scores)
     score_max = tf.reduce_max(dev_scores)
@@ -71,17 +71,17 @@ def getPredictions(W, V, b, U, word_vectors):
         e1  = tf.reshape(entity_vectors[:, test_data[i,0]], [params.embedding_size, 1])
         e2  = tf.reshape(entity_vectors[:, test_data[i,2]], [params.embedding_size, 1])
 
-        entity_stack = tf.concat(0, [e1, e2])
-        test_score   = 0
+    entity_stack = tf.Variable(tf.concat(0, [e1, e2]))
+    test_score   = 0
 
-        """ Calculate the prediction score for the 'i'th example """
-        for k in range(params.slice_size):
-            test_score += U[rel][k, 0] * \
-                (tf.batch_matmul(e1.T, tf.batch_matmul(W[rel][:, :, k], e2)) +
-                    batch_matmul(V[rel][:, k].T, entity_stack) + b[rel][0, k])
+    # calculate prediction score for ith example
+    for k in range(params.slice_size):
+        # need equivalent for dot product
+        dev_scores[i, 0] += U[rel][k, 0] * \
+        (tf.reduce_sum(batch_matmul(tf.transpose(e1), tf.reduce_sum(batch_matmul(W[rel][:, :, k], e2)))) +
+        tf.reduce_sum(batch_matmul(tf.transpose(V[rel][:, k]), entity_stack)) + b[rel][0, k])
 
-        """ Give predictions based on previously calculate thresholds """
-
+        # get labels from theshold scores
         if(test_score <= best_thresholds[rel, 0]):
             predictions[i, 0] = 1
         else:
