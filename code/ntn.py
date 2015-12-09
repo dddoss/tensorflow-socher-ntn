@@ -77,10 +77,10 @@ def inference(batch_placeholder, corrupt_placeholder, init_word_embeds,\
 
     e1, R, e2, e3 = tf.split(1, 4, batch_placeholder) #TODO: should the split dimension be 0 or 1?
     #convert entity word index reps to embeddings... how?
-    e1v = tf.pack([tf.matmul(E, tf.split(0, batch_size, tf.gather(ent2words_tensor, e1v)) for i in range(batch_size)]
-    e2v = tf.pack([tf.matmul(E, tf.split(0, batch_size, tf.gather(ent2words_tensor, e2v)) for i in range(batch_size)]
-    e3v = tf.pack([tf.matmul(E, tf.split(0, batch_size, tf.gather(ent2words_tensor, e3v)) for i in range(batch_size)]
-    
+    e1v = tf.pack([tf.matmul(E, tf.split(0, batch_size, tf.gather(ent2words_tensor, e1v))) for i in range(batch_size)])
+    e2v = tf.pack([tf.matmul(E, tf.split(0, batch_size, tf.gather(ent2words_tensor, e2v))) for i in range(batch_size)])
+    e3v = tf.pack([tf.matmul(E, tf.split(0, batch_size, tf.gather(ent2words_tensor, e3v))) for i in range(batch_size)])
+
     #e1v, e2v, e3v should be (batch_size * 100) tensors by now
     for r in range(num_relations):
         #calc g(e1, R, e2) and g(e1, R, e3) for each relation
