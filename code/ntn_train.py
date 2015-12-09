@@ -1,3 +1,4 @@
+import tensorflow as tf
 import ntn_input
 #import ntn
 import params
@@ -29,3 +30,7 @@ for i in range(num_iters):
     # update cost
     # params.cost(iter) = cost;
     # write cost to file for each iteration
+
+  
+
+

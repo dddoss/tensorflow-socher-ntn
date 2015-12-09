@@ -11,6 +11,7 @@ relations_string='/relations.txt'
 embeds_string='/initEmbed.mat'
 training_string='/train.txt'
 test_string='/test.txt'
+dev_string='/dev.txt'
 
 #input: path of dataset to be used
 #output: python list of entities in dataset
@@ -49,6 +50,11 @@ def load_training_data(data_path=params.data_path):
     training_file = open(data_path+training_string)
     training_data = [line.split('\t') for line in training_file.read().strip().split('\n')]
     return np.array(training_data)
+
+def load_dev_data(data_path=params.data_path):
+    dev_file = open(data_path+test_string)
+    dev_data = [line.split('\t') for line in dev_file.read().strip().split('\n')]
+    return np.array(dev_data)
 
 def load_test_data(data_path=params.data_path):
     test_file = open(data_path+test_string)
