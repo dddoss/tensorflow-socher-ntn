@@ -1,5 +1,6 @@
 import tensorflow as tf
 import params
+import ntn_input
 
 # Inference
 # Loss
@@ -19,9 +20,20 @@ class NTN:
 
         # a 2D tensor with entity vectors. Someone needs to make this
         # and somehow we need to be able to index into it
-        self.E = Entities()
 
-        for r in range(self.num_relations):
+        data_path = hyperparameters['data_path']
+        entities_strings = ntn_input.load_entities(data_path)
+        self.relations = tf.constant(ntn_input.load_relations(data_path))
+        (initEmbeds, entity_words) = ntn_input.load_init_embeds(data_path) 
+        
+        self.entity_words = entity_words #map from entity indices to word 
+        self.W = W = dict()
+        self.V = V = dict()
+        self.b = b = dict()
+        self.U = U = dict()
+        self.E = E = tf.Variable(initEmbeds) #word embeddings
+
+        for r in self.relations:
             W[r] = tf.Variable(tf.truncated_normal([d, d, k])) # W[i] = np.random.random([d, d, k]) * 2 * r - r
             V[r] = tf.Variable(tf.zeros([2 * d, k]))
             b[r] = tf.Variable(tf.zeros([1, k]))
@@ -52,30 +64,23 @@ class NTN:
         train_step = tf.train.AdagradOptimizer(0.01).minimize(contrastive_max_margin)
 
     def train(self):
-
         with tf.Session() as sess:
-        	init = tf.initialize_all_variables()
+            init = tf.initialize_all_variables()
             sess.run(init)
-
             for i in range(iterations):
+                sess.run(train_step, feed_dict={     })
 
- 	           sess.run(train_step, feed_dict={     })
-
-
-
-
-
-if name=="__main__":
+if __name__=="__main__":
     hyperparameters = {"data_path":params.data_path,
-            "num_iter":params.num_iter,
-            "train_both":params.train_both,
-            "batch_size":params.batch_size,
-            "corrupt_size":params.corrupt_size,
-            "embedding_size":params.embedding_size,
-            "slice_size":params.slice_size,
-            "lambda":params.reg_parameter,
+            "num_iter":             params.num_iter,
+            "train_both":           params.train_both,
+            "batch_size":           params.batch_size,
+            "corrupt_size":         params.corrupt_size,
+            "embedding_size":       params.embedding_size,
+            "slice_size":           params.slice_size,
+            "lambda":               params.reg_parameter,
             "in_tensor_keep_normal":params.in_tensor_keep_normal,
-            "save_per_iter":params.save_per_iter,
-            "gradient_checking":params.gradient_checking
+            "save_per_iter":        params.save_per_iter,
+            "gradient_checking":    params.gradient_checking
         }
     ntn = NTN(hyperparameters)
