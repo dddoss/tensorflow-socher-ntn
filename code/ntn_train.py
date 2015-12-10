@@ -58,9 +58,12 @@ def run_training():
 	# Run the Op to initialize the variables.
 	init = tf.initialize_all_variables()
 	sess.run(init)
+    saver = tf.train.Saver()
         for i in range(num_iters):
             print("Starting iter "+str(i))
             data_batch = get_batch(batch_size, indexed_training_data, num_entities, corrupt_size)
+
+            if i % 5 == 0 and i != 0: saver.save(sess, params.output_dir)
 
 	    feed_dict = fill_feed_dict(data_batch, params.train_both, batch_placeholder, corrupt_placeholder)
             _, loss_value = sess.run([training, loss], feed_dict=feed_dict)
