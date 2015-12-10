@@ -19,9 +19,9 @@ def inference(batch_placeholder, corrupt_placeholder, init_word_embeds,\
     num_words = len(init_word_embeds)
     E = tf.Variable(init_word_embeds) #d=embed size
     W = [tf.Variable(tf.truncated_normal([d,d,k])) for r in range(num_relations)]
-    V = [tf.Variable(tf.zeros([2 * d, k])) for r in range(num_relations)]
-    b = [tf.Variable(tf.zeros([1, k])) for r in range(num_relations)]
-    U = [tf.Variable(tf.ones([k, 1])) for r in range(num_relations)]
+    V = [tf.Variable(tf.zeros([k, 2*d])) for r in range(num_relations)]
+    b = [tf.Variable(tf.zeros([k, 1])) for r in range(num_relations)]
+    U = [tf.Variable(tf.ones([1, k])) for r in range(num_relations)]
 
     print("Calcing ent2word")
     #python list of tf vectors: i -> list of word indices cooresponding to entity i
@@ -55,8 +55,6 @@ def inference(batch_placeholder, corrupt_placeholder, init_word_embeds,\
     #e1v, e2v, e3v should be (batch_size * 100) tensors by now
     for r in range(num_relations):
         print("Relations loop "+str(r))
-        #calc g(e1, R, e2) and g(e1, R, e3) for each relation
-        # predictions.append(tf.pack([g(e1r[r],  W[r], e2r[r]), g(e1r[r], W[r], e3r[r])]))
         num_rel_r = tf.shape(e1r_pos[r])
         preactivation_pos = list()
         preactivation_neg = list()
@@ -68,9 +66,16 @@ def inference(batch_placeholder, corrupt_placeholder, init_word_embeds,\
 
         preactivation_pos = tf.pack(preactivation_pos)
         preactivation_neg = tf.pack(preactivation_neg)
+        #print("Tensor shapes: ")
+        #print("   preactivation_pos: "+str(preactivation_pos.get_shape()))
+        #print("   b[r]: "+str(b[r].get_shape()))
+        #print("   V[r]: "+str(V[r].get_shape()))
+        #print("   e1r_pos[r]: "+str(e1r_pos[r].get_shape()))
 
         temp2_pos = tf.matmul(V[r], tf.concat(0, [e1r_pos[r], e2r_pos[r]]))
         temp2_neg = tf.matmul(V[r], tf.concat(0, [e1r_neg[r], e2r_neg[r]]))
+
+        #print("   temp2_pos: "+str(temp2_pos.get_shape()))
         preactivation_pos = preactivation_pos+temp2_pos+b[r]
         preactivation_neg = preactivation_neg+temp2_neg+b[r]
 
@@ -80,10 +85,11 @@ def inference(batch_placeholder, corrupt_placeholder, init_word_embeds,\
 
         score_pos = tf.reshape(tf.matmul(U[r], activation_pos), num_rel_r)
         score_neg = tf.reshape(tf.matmul(U[r], activation_neg), num_rel_r)
-        tf.pack([score_pos, score_neg])
+        predictions.append(tf.pack([score_pos, score_neg]))
 
     print("Concating predictions")
-    predictions = tf.concat(1, predictions)
+    predictions = tf.squeeze(tf.pack(predictions))
+    print(predictions.get_shape())
 
     return predictions
 
