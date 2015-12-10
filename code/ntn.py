@@ -97,11 +97,16 @@ def inference(batch_placeholder, corrupt_placeholder, init_word_embeds,\
     return predictions
 
 
-def loss(infer_results):
-    pass
+def loss(predictions):
 
-def training(loss_results):
-    pass
+    temp = tf.max(tf.sub(predictions[:, 1], predictions[:, 0]) + 1, 0)
+    return tf.sum(temp)
+
+
+def training(loss, learningRate):
+
+    return tf.train.AdagradOptimizer(learningRate).minimize(loss)
+
 
 def eval(infer_results):
     pass

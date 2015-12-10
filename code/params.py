@@ -22,3 +22,4 @@ in_tensor_keep_normal = False
 
 save_per_iter=100
 gradient_checking = True
+learning_rate = 0.01
