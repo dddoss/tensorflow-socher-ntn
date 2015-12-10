@@ -40,19 +40,19 @@ def run_training():
     slice_size = params.slice_size
 
     with tf.Graph().as_default():
-        batch_placeholder = tf.placeholder(tf.float32, shape=(4, batch_size)
+        batch_placeholder = tf.placeholder(tf.float32, shape=(4, batch_size))
         corrupt_placeholder = tf.placeholder(tf.bool, shape=(1)) #Which of e1 or e2 to corrupt?
         inference = ntn.inference(batch_placeholder, corrupt_placeholder, init_word_embeds, entity_to_wordvec, \
-                num_entities, num_relations, slice_size, batch_size) 
-        loss = ntn.loss(inference)
-        training = ntn.training(loss)
+                num_entities, num_relations, slice_size, batch_size)
+        loss = ntn.loss(inference, params.regularization)
+        training = ntn.training(loss, params.learning_rate)
         for i in range(num_iters):
             data_batch = get_batch(batch_size, indexed_training_data, num_entities, corrupt_size)
 
-	    feed_dict = fill_feed_dict(data_batch, params.train_both, batch_placeholder, corrupt_placeholder) 
+	    feed_dict = fill_feed_dict(data_batch, params.train_both, batch_placeholder, corrupt_placeholder)
             _, loss_value = sess.run([training, loss], feed_dict=feed_dict)
 
-            #TODO: Eval against dev set? 
+            #TODO: Eval against dev set?
             #TODO: Save model!
 
 def main():

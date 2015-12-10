@@ -87,18 +87,44 @@ def inference(batch_placeholder, corrupt_placeholder, init_word_embeds,\
     e2v = tf.gather(entEmbed, e2)
     e3v = tf.gather(entEmbed, e3)
 
+    e1r = tf.dynamic_partition(e1v, R, num_relations)
+    e2r = tf.dynamic_partition(e2v, R, num_relations)
+    e3r = tf.dynamic_partition(e3v, R, num_relations)
+
+    predictions = list()
+
     #e1v, e2v, e3v should be (batch_size * 100) tensors by now
     for r in range(num_relations):
-
-
         #calc g(e1, R, e2) and g(e1, R, e3) for each relation
+        predictions.append(tf.pack([g(e1r[r],  W[r], e2r[r]), g(e1r[r], W[r], e3r[r])]))
+
+    predictions = tf.pack(predictions)
+
+    return predictions
 
 
-def loss(infer_results):
-    pass
+def loss(predictions, regularization):
 
-def training(loss_results):
-    pass
+    temp1 = tf.max(tf.sub(predictions[:, 1], predictions[:, 0]) + 1, 0)
+    temp1 = tf.sum(temp)
 
-def eval(infer_results):
-    pass
+    temp2 = tf.sqrt(sum([tf.reduce_sum(tf.square(var)) for var in tf.trainable_variables()]))
+
+    temp = temp1 + (regularization * temp2)
+
+    return temp
+
+
+def training(loss, learningRate):
+
+    return tf.train.AdagradOptimizer(learningRate).minimize(loss)
+
+
+def eval(predictions):
+
+
+
+
+
+
+
