@@ -69,17 +69,23 @@ def inference(batch_placeholder, corrupt_placeholder, init_word_embeds,\
     b = [tf.Variable(tf.zeros([1, k])) for r in range(len(num_relations))]
     U = [tf.Variable(tf.ones([k, 1])) for r in range(len(num_relations))]
 
-    ent2words = [[0]*num_words for i in range(num_entities)]
-    for i in range(len(entity_to_wordvec)):
-        for j in entity_to_wordvec[i]:
-            ent2words[i][j] = 1.0/len(entity_to_wordvec[i])
-    ent2words_tensor = tf.Constant(ent2words) #each row i cooresponds to entity i; e2w_tensor[i]*E=entity embedding
+
+    #ent2words = [[0]*num_words for i in range(num_entities)]
+    #for i in range(len(entity_to_wordvec)):
+    #    for j in entity_to_wordvec[i]:
+    #        ent2words[i][j] = 1.0/len(entity_to_wordvec[i])
+    #ent2words_tensor = tf.Constant(ent2words) #each row i cooresponds to entity i; e2w_tensor[i]*E=entity embedding
+    
+    #python list of tf vectors: i -> list of word indices cooresponding to entity i
+    ent2word = [tf.constant(entity_to_wordvec[i]) for i in range(num_entities)]
+    #(num_entities, d) matrix where row i cooresponds to the entity embedding (word embedding average) of entity i
+    entEmbed = tf.pack([tf.reduce_mean(tf.gather(E, ent2word[i]), 0) for i in range(num_entities)])
 
     e1, R, e2, e3 = tf.split(1, 4, batch_placeholder) #TODO: should the split dimension be 0 or 1?
     #convert entity word index reps to embeddings
-    e1v = tf.matmul(E, tf.gather(ent2words_tensor, e1))
-    e2v = tf.matmul(E, tf.gather(ent2words_tensor, e2))
-    e3v = tf.matmul(E, tf.gather(ent2words_tensor, e3))
+    e1v = tf.gather(entEmbed, e1)
+    e2v = tf.gather(entEmbed, e2)
+    e3v = tf.gather(entEmbed, e3)
 
     #e1v, e2v, e3v should be (batch_size * 100) tensors by now
     for r in range(num_relations):
