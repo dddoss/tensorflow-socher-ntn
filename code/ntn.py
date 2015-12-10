@@ -81,8 +81,15 @@ def inference(batch_placeholder, corrupt_placeholder, init_word_embeds,\
     e2v = tf.matmul(E, tf.gather(ent2words_tensor, e2))
     e3v = tf.matmul(E, tf.gather(ent2words_tensor, e3))
 
+    output1 = tf.dynamic_partition(e1v, R, num_relations)
+    output2 = tf.dynamic_partition(e2v, R, num_relations)
+    output3 = tf.dynamic_partition(e3v, R, num_relations)
+
     #e1v, e2v, e3v should be (batch_size * 100) tensors by now
     for r in range(num_relations):
+        predictions = tf.concat(g(output1[r],  W[r], output2[r]), g(output1[r], W[r], output3[r]))
+
+
 
 
         #calc g(e1, R, e2) and g(e1, R, e3) for each relation
