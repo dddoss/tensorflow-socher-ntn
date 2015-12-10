@@ -97,10 +97,16 @@ def inference(batch_placeholder, corrupt_placeholder, init_word_embeds,\
     return predictions
 
 
-def loss(predictions):
+def loss(predictions, regularization):
 
-    temp = tf.max(tf.sub(predictions[:, 1], predictions[:, 0]) + 1, 0)
-    return tf.sum(temp)
+    temp1 = tf.max(tf.sub(predictions[:, 1], predictions[:, 0]) + 1, 0)
+    temp1 = tf.sum(temp)
+
+    temp2 = tf.sqrt(sum([tf.reduce_sum(tf.square(var)) for var in tf.trainable_variables()]))
+
+    temp = temp1 + (regularization * temp2)
+
+    return temp
 
 
 def training(loss, learningRate):
@@ -108,5 +114,11 @@ def training(loss, learningRate):
     return tf.train.AdagradOptimizer(learningRate).minimize(loss)
 
 
-def eval(infer_results):
-    pass
+def eval(predictions):
+
+
+
+
+
+
+

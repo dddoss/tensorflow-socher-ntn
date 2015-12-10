@@ -44,7 +44,7 @@ def run_training():
         corrupt_placeholder = tf.placeholder(tf.bool, shape=(1)) #Which of e1 or e2 to corrupt?
         inference = ntn.inference(batch_placeholder, corrupt_placeholder, init_word_embeds, entity_to_wordvec, \
                 num_entities, num_relations, slice_size, batch_size)
-        loss = ntn.loss(inference)
+        loss = ntn.loss(inference, params.regularization)
         training = ntn.training(loss, params.learning_rate)
         for i in range(num_iters):
             data_batch = get_batch(batch_size, indexed_training_data, num_entities, corrupt_size)
