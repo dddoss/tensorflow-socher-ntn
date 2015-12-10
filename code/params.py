@@ -8,7 +8,7 @@ else:
 
 # init_num = 0 #TODO: What do?
 
-num_iter = 500
+num_iter = 1
 train_both = False
 
 batch_size = 20000

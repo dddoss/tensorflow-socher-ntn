@@ -10,23 +10,25 @@ import random
 #returns a (batch_size*corrupt_size, 2) vector corresponding to [g(T^i), g(T_c^i)] for all i
 def inference(batch_placeholder, corrupt_placeholder, init_word_embeds,\
         entity_to_wordvec, num_entities, num_relations, slice_size, batch_size):
+    print("Beginning building inference")
     #TODO: We need to check the shapes and axes used here!
     d = 100 #embed_size
     k = slice_size
     num_words = len(init_word_embeds)
-    E = tf.Variable(init_word_embeds, shape=(num_words, d)) #d=embed size
-    W = [tf.Variable(tf.truncated_normal([d,d,k])) for r in range(len(num_relations))]
-    V = [tf.Variable(tf.zeros([2 * d, k])) for r in range(len(num_relations))]
-    b = [tf.Variable(tf.zeros([1, k])) for r in range(len(num_relations))]
-    U = [tf.Variable(tf.ones([k, 1])) for r in range(len(num_relations))]
+    E = tf.Variable(init_word_embeds) #d=embed size
+    W = [tf.Variable(tf.truncated_normal([d,d,k])) for r in range(num_relations)]
+    V = [tf.Variable(tf.zeros([2 * d, k])) for r in range(num_relations)]
+    b = [tf.Variable(tf.zeros([1, k])) for r in range(num_relations)]
+    U = [tf.Variable(tf.ones([k, 1])) for r in range(num_relations)]
 
     #python list of tf vectors: i -> list of word indices cooresponding to entity i
     ent2word = [tf.constant(entity_to_wordvec[i]) for i in range(num_entities)]
     #(num_entities, d) matrix where row i cooresponds to the entity embedding (word embedding average) of entity i
     entEmbed = tf.pack([tf.reduce_mean(tf.gather(E, ent2word[i]), 0) for i in range(num_entities)])
 
-    e1, R, e2, e3 = tf.split(1, 4, batch_placeholder) #TODO: should the split dimension be 0 or 1?
+    e1, R, e2, e3 = tf.split(1, 4, tf.cast(batch_placeholder, tf.int32)) #TODO: should the split dimension be 0 or 1?
     #convert entity word index reps to embeddings
+    
     e1v = tf.gather(entEmbed, e1)
     e2v = tf.gather(entEmbed, e2)
     e3v = tf.gather(entEmbed, e3)
@@ -72,6 +74,7 @@ def inference(batch_placeholder, corrupt_placeholder, init_word_embeds,\
 
 def loss(predictions, regularization):
 
+    print("Beginning building loss")
     temp1 = tf.max(tf.sub(predictions[:, 1], predictions[:, 0]) + 1, 0)
     temp1 = tf.sum(temp)
 
@@ -83,6 +86,7 @@ def loss(predictions, regularization):
 
 
 def training(loss, learningRate):
+    print("Beginning building training")
 
     return tf.train.AdagradOptimizer(learningRate).minimize(loss)
 

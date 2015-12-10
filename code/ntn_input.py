@@ -43,7 +43,7 @@ def load_embeds(file_path):
     we = mat_contents['We']
     tree = mat_contents['tree']
     word_vecs = [[we[j][i] for j in range(params.embedding_size)] for i in range(len(words[0]))]
-    entity_words = [tree[i][0][0][0][0][0] for i in range(len(tree))]
+    entity_words = [map(int, tree[i][0][0][0][0][0]) for i in range(len(tree))]
     return (word_vecs,entity_words)
 
 def load_training_data(data_path=params.data_path):
