@@ -57,9 +57,13 @@ def inference(batch_placeholder, corrupt_placeholder, init_word_embeds,\
     e2v = tf.gather(entEmbed, e2)
     e3v = tf.gather(entEmbed, e3)
 
-    e1r = tf.dynamic_partition(e1v, R, num_relations)
-    e2r = tf.dynamic_partition(e2v, R, num_relations)
+    e1r_pos = tf.dynamic_partition(e1v, R, num_relations)
+    e2r_pos = tf.dynamic_partition(e2v, R, num_relations)
     e3r = tf.dynamic_partition(e3v, R, num_relations)
+
+    e1r_neg = e1r_pos
+    e2r_neg = e3r
+        
 
     predictions = list()
 
@@ -67,35 +71,27 @@ def inference(batch_placeholder, corrupt_placeholder, init_word_embeds,\
     for r in range(num_relations):
         #calc g(e1, R, e2) and g(e1, R, e3) for each relation
         # predictions.append(tf.pack([g(e1r[r],  W[r], e2r[r]), g(e1r[r], W[r], e3r[r])]))
+        num_rel_r = len(e1r_pos[r])
+        preactivation_pos = tf.zeros((k,num_rel_r))
+        preactivation_neg = tf.zeros((k,num_rel_r))
 
         for slice in range(k):
+            preactivation_pos[slice, :] = tf.reduce_sum(e1r_pos[r] * tf.matmul(W[r][:,:,slice], e2r_pos[r]), 0)
+            preactivation_neg[slice, :] = tf.reduce_sum(e1r_neg[r] * tf.matmul(W[r][:,:,slice], e2r_neg[r]), 0)
 
-            # preactivation_pos[slice, :] = np.sum(entity_vectors_e1     * np.dot(W[i][:, :, slice], entity_vectors_e2), axis = 0)
+        temp2_pos = tf.matmul(V[r], tf.concat(0, [e1r_pos[r], e2r_pos[r]]))
+        temp2_neg = tf.matmul(V[r], tf.concat(0, [e1r_neg[r], e2r_neg[r]]))
+        preacitavtion_pos = tf.add(practivation_pos, temp2_pos, b[r])
+        preacitavtion_neg = tf.add(practivation_neg, temp2_neg, b[r])
 
+        activation_pos = tf.tanh(practivation_pos)
+        activation_neg = tf.tanh(practivation_neg)
 
+        score_pos = tf.reshape(tf.matmul(U[r], activation_pos), [num_rel_r])
+        score_neg = tf.reshape(tf.matmul(U[r], activation_neg), [num_rel_r])
+        tf.pack([score_pos, score_neg])
 
-          tf.matmul() W[r]
-
-        # bilinear tensor product:
-        e1 = tf.reshape(e1, [1, d])
-        Wr = tf.reshape(W, [d, d*k])
-        temp = tf.matmul(e1, W)
-        temp = tf.reshape(temp, [k, d])
-        e2 = tf.reshape(e2, [d, 1])
-        temp1 = tf.matmul(temp, e2)
-
-        # neural tensor layer:
-        temp2 = tf.matmul(V, tf.concat(0, [e1, e2]))
-        temp = tf.add(temp1, temp2, b)
-        temp = tf.tanh(temp)
-        temp = tf.matmul(U, temp)
-        return temp
-
-
-
-
-
-    predictions = tf.pack(predictions)
+    predictions = tf.concat(1, predictions)
 
     return predictions
 
