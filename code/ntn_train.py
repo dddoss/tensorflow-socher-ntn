@@ -51,6 +51,13 @@ def run_training():
                 num_entities, num_relations, slice_size, batch_size)
         loss = ntn.loss(inference, params.regularization)
         training = ntn.training(loss, params.learning_rate)
+
+	# Create a session for running Ops on the Graph.
+	sess = tf.Session()
+
+	# Run the Op to initialize the variables.
+	init = tf.initialize_all_variables()
+	sess.run(init)
         for i in range(num_iters):
             print("Starting iter "+str(i))
             data_batch = get_batch(batch_size, indexed_training_data, num_entities, corrupt_size)
