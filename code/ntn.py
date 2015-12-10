@@ -7,32 +7,6 @@ import random
 # Loss
 # Training
 
-# E1 and E2 are matrices of b columns of d-dim entity vectors. W is a dxdxk tensor.
-# def BATCH_bilinearTensorProduct(self, E1, W, E2):
-
-#     e1 = tf.reshape(e1, [d, b, 1])
-#     W = tf.reshape(W, [d*k, d])
-
-#     temp = tf.matmul(e1, W)
-#     temp = tf.reshape(temp, [k, d])
-#     e2 = tf.reshape(e2, [d, 1])
-#     temp = tf.matmul(temp, e2)
-#     return temp
-
-# def BATCH_g(self, (e1, R, e2)):
-
-#     temp1 = bilinearTensorProduct(e1, W, e2)
-#     temp2 = tf.matmul(V, tf.concat(0, [e1, e2]))
-#     temp = tf.add(temp1, temp2, b)
-#     temp = tf.tanh(temp)
-#     temp = tf.matmul(U, temp)
-#     return temp
-
-# e1 and e2 are d-dimensional entity vectors. W is a dxdxk tensor.
-def bilinearTensorProduct(e1, W, e2):
-
-
-
 #returns a (batch_size*corrupt_size, 2) vector corresponding to [g(T^i), g(T_c^i)] for all i
 def inference(batch_placeholder, corrupt_placeholder, init_word_embeds,\
         entity_to_wordvec, num_entities, num_relations, slice_size, batch_size):
@@ -63,7 +37,7 @@ def inference(batch_placeholder, corrupt_placeholder, init_word_embeds,\
 
     e1r_neg = e1r_pos
     e2r_neg = e3r
-        
+
 
     predictions = list()
 
