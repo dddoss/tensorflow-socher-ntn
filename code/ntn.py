@@ -35,10 +35,10 @@ def inference(batch_placeholders, corrupt_placeholder, init_word_embeds, entity_
     print("Beginning relations loop")
     for r in range(num_relations):
         print("Relations loop "+str(r))
-        e1, e2, e3 = tf.split(0, 3, tf.cast(batch_placeholders[r], tf.int32)) #TODO: should the split dimension be 0 or 1?
-        e1v = tf.squeeze(tf.gather(entEmbed, e2),[0])
-        e2v = tf.squeeze(tf.gather(entEmbed, e2),[0])
-        e3v = tf.squeeze(tf.gather(entEmbed, e3),[0])
+        e1, e2, e3 = tf.split(1, 3, tf.cast(batch_placeholders[r], tf.int32)) #TODO: should the split dimension be 0 or 1?
+        e1v = tf.squeeze(tf.gather(entEmbed, e2),[1])
+        e2v = tf.squeeze(tf.gather(entEmbed, e2),[1])
+        e3v = tf.squeeze(tf.gather(entEmbed, e3),[1])
         e1v_pos = e1v
         e2v_pos = e2v
         e1v_neg = e1v
@@ -76,7 +76,7 @@ def inference(batch_placeholders, corrupt_placeholder, init_word_embeds, entity_
         if not is_eval:
             predictions.append(tf.pack([score_pos, score_neg]))
         else:
-            predictions.append(tf.pack([score_pos, label_placeholders[r]]))
+            predictions.append(tf.pack([score_pos, tf.reshape(label_placeholders[r], [1,None])]))
         #print("score_pos_and_neg: "+str(predictions[r].get_shape()))
 
 

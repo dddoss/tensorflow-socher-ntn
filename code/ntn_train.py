@@ -31,7 +31,8 @@ def fill_feed_dict(batches, train_both, batch_placeholders, label_placeholders, 
     feed_dict = {corrupt_placeholder: (train_both and np.random.random()>0.5)}
     for i in range(len(batch_placeholders)):
         feed_dict[batch_placeholders[i]] = batches[i]
-        feed_dict[label_placeholders[i]] = [[0.]*len(batches[i])]
+        feed_dict[label_placeholders[i]] = [[0.0]*len(batches[i])]
+    return feed_dict
 
 def run_training():
     print("Begin!")
@@ -56,8 +57,8 @@ def run_training():
 
     with tf.Graph().as_default():
         print("Starting to build graph "+str(datetime.datetime.now()))
-        batch_placeholders = [tf.placeholder(tf.float32, shape=(3, None)) for i in range(num_relations)]
-        label_placeholders = [tf.placeholder(tf.float32, shape=(1, None)) for i in range(num_relations)]
+        batch_placeholders = [tf.placeholder(tf.int32, shape=(None, 3), name='batch '+str(i)) for i in range(num_relations)]
+        label_placeholders = [tf.placeholder(tf.float32, shape=(None, 1), name='label '+str(i)) for i in range(num_relations)]
 
         corrupt_placeholder = tf.placeholder(tf.bool, shape=(1)) #Which of e1 or e2 to corrupt?
         inference = ntn.inference(batch_placeholders, corrupt_placeholder, init_word_embeds, entity_to_wordvec, \
