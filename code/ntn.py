@@ -8,8 +8,8 @@ import random
 # Training
 
 #returns a (batch_size*corrupt_size, 2) vector corresponding to [g(T^i), g(T_c^i)] for all i
-def inference(batches_placeholder, corrupt_placeholder, init_word_embeds, entity_to_wordvec,\
-        num_entities, num_relations, slice_size, batch_size, is_eval=False, label_placeholders=None):
+def inference(batch_placeholders, corrupt_placeholder, init_word_embeds, entity_to_wordvec,\
+        num_entities, num_relations, slice_size, batch_size, is_eval, label_placeholders):
     print("Beginning building inference:")
     #TODO: We need to check the shapes and axes used here!
     print("Creating variables")
@@ -35,7 +35,7 @@ def inference(batches_placeholder, corrupt_placeholder, init_word_embeds, entity
     print("Beginning relations loop")
     for r in range(num_relations):
         print("Relations loop "+str(r))
-        e1, e2, e3 = tf.split(0, 3, tf.cast(batches_placeholder[r], tf.int32)) #TODO: should the split dimension be 0 or 1?
+        e1, e2, e3 = tf.split(0, 3, tf.cast(batch_placeholders[r], tf.int32)) #TODO: should the split dimension be 0 or 1?
         e1v = tf.squeeze(tf.gather(entEmbed, e2),[0])
         e2v = tf.squeeze(tf.gather(entEmbed, e2),[0])
         e3v = tf.squeeze(tf.gather(entEmbed, e3),[0])
@@ -73,7 +73,7 @@ def inference(batches_placeholder, corrupt_placeholder, init_word_embeds, entity
         score_pos = tf.reshape(tf.matmul(U[r], activation_pos), num_rel_r)
         score_neg = tf.reshape(tf.matmul(U[r], activation_neg), num_rel_r)
         #print("score_pos: "+str(score_pos.get_shape()))
-        if not is_Eval:
+        if not is_eval:
             predictions.append(tf.pack([score_pos, score_neg]))
         else:
             predictions.append(tf.pack([score_pos, label_placeholders[r]]))
