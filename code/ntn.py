@@ -25,36 +25,37 @@ def inference(batch_placeholders, corrupt_placeholder, init_word_embeds, entity_
 
     print("Calcing ent2word")
     #python list of tf vectors: i -> list of word indices cooresponding to entity i
-    ent2word = [tf.constant(entity_to_wordvec[i]) for i in range(num_entities)]
+    ent2word = [tf.constant(entity_i) for entity_i in entity_to_wordvec]
     #(num_entities, d) matrix where row i cooresponds to the entity embedding (word embedding average) of entity i
     print("Calcing entEmbed...")
-    entEmbed = tf.pack([tf.reduce_mean(tf.gather(E, ent2word[i]), 0) for i in range(num_entities)])
-    #TEST: entEmbed = tf.truncated_normal([num_entities, d])
+    entEmbed = tf.pack([tf.reduce_mean(tf.gather(E, entword), 0) for entword in ent2word])
+    #entEmbed = tf.truncated_normal([num_entities, d])
+    print(entEmbed.get_shape())
 
     predictions = list()
     print("Beginning relations loop")
     for r in range(num_relations):
         print("Relations loop "+str(r))
         e1, e2, e3 = tf.split(1, 3, tf.cast(batch_placeholders[r], tf.int32)) #TODO: should the split dimension be 0 or 1?
-        e1v = tf.squeeze(tf.gather(entEmbed, e2),[1])
-        e2v = tf.squeeze(tf.gather(entEmbed, e2),[1])
-        e3v = tf.squeeze(tf.gather(entEmbed, e3),[1])
+        e1v = tf.transpose(tf.squeeze(tf.gather(entEmbed, e1, name='e1v'+str(r)),[1]))
+        e2v = tf.transpose(tf.squeeze(tf.gather(entEmbed, e2, name='e2v'+str(r)),[1]))
+        e3v = tf.transpose(tf.squeeze(tf.gather(entEmbed, e3, name='e3v'+str(r)),[1]))
         e1v_pos = e1v
         e2v_pos = e2v
         e1v_neg = e1v
         e2v_neg = e3v
-        num_rel_r = tf.expand_dims(tf.shape(e1v_pos)[0], 0)
+        num_rel_r = tf.expand_dims(tf.shape(e1v_pos)[1], 0)
         preactivation_pos = list()
         preactivation_neg = list()
 
-        print("e1v_pos: "+str(e1v_pos.get_shape()))
-        print("W[r][:,:,slice]: "+str(W[r][:,:,0].get_shape()))
-        print("e2v_pos: "+str(e2v_pos.get_shape()))
+        #print("e1v_pos: "+str(e1v_pos.get_shape()))
+        #print("W[r][:,:,slice]: "+str(W[r][:,:,0].get_shape()))
+        #print("e2v_pos: "+str(e2v_pos.get_shape()))
 
         #print("Starting preactivation funcs")
         for slice in range(k):
-            preactivation_pos.append(tf.reduce_sum(e1v_pos * tf.matmul(W[r][:,:,slice], e2v_pos), 0))
-            preactivation_neg.append(tf.reduce_sum(e1v_neg * tf.matmul(W[r][:,:,slice], e2v_neg), 0))
+            preactivation_pos.append(tf.reduce_sum(e1v_pos*tf.matmul(W[r][:,:,slice], e2v_pos), 0))
+            preactivation_neg.append(tf.reduce_sum(e1v_neg*tf.matmul( W[r][:,:,slice], e2v_neg), 0))
 
         preactivation_pos = tf.pack(preactivation_pos)
         preactivation_neg = tf.pack(preactivation_neg)

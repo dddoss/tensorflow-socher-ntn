@@ -12,12 +12,15 @@ def data_to_indexed(data, entities, relations):
     relation_to_index = {relations[i] : i for i in range(len(relations))}
     indexed_data = [(entity_to_index[data[i][0]], relation_to_index[data[i][1]],\
             entity_to_index[data[i][2]]) for i in range(len(data))]
+    for i in range(len(data)):
+        if entity_to_index[data[i][0]]>=len(entities):
+            print("BLAAAAH")
     return indexed_data
 
 def get_batch(batch_size, data, num_entities, corrupt_size):
     random_indices = random.sample(range(len(data)), batch_size)
     #data[i][0] = e1, data[i][1] = r, data[i][2] = e2, random=e3 (corrupted)
-    batch = [(data[i][0], data[i][1], data[i][2], random.randint(0, num_entities))\
+    batch = [(data[i][0], data[i][1], data[i][2], random.randint(0, num_entities-1))\
 	for i in random_indices for j in range(corrupt_size)]
     return batch
 
@@ -28,10 +31,10 @@ def split_batch(data_batch, num_relations):
     return batches
 
 def fill_feed_dict(batches, train_both, batch_placeholders, label_placeholders, corrupt_placeholder):
-    feed_dict = {corrupt_placeholder: (train_both and np.random.random()>0.5)}
+    feed_dict = {corrupt_placeholder: [train_both and np.random.random()>0.5]}
     for i in range(len(batch_placeholders)):
         feed_dict[batch_placeholders[i]] = batches[i]
-        feed_dict[label_placeholders[i]] = [[0.0]*len(batches[i])]
+        feed_dict[label_placeholders[i]] = [[0.0] for j in range(len(batches[i]))]
     return feed_dict
 
 def run_training():
@@ -57,8 +60,8 @@ def run_training():
 
     with tf.Graph().as_default():
         print("Starting to build graph "+str(datetime.datetime.now()))
-        batch_placeholders = [tf.placeholder(tf.int32, shape=(None, 3), name='batch '+str(i)) for i in range(num_relations)]
-        label_placeholders = [tf.placeholder(tf.float32, shape=(None, 1), name='label '+str(i)) for i in range(num_relations)]
+        batch_placeholders = [tf.placeholder(tf.int32, shape=(None, 3), name='batch_'+str(i)) for i in range(num_relations)]
+        label_placeholders = [tf.placeholder(tf.float32, shape=(None, 1), name='label_'+str(i)) for i in range(num_relations)]
 
         corrupt_placeholder = tf.placeholder(tf.bool, shape=(1)) #Which of e1 or e2 to corrupt?
         inference = ntn.inference(batch_placeholders, corrupt_placeholder, init_word_embeds, entity_to_wordvec, \
