@@ -1,0 +1,6 @@
+model_checkpoint_path: "../output/Wordnet/Wordnet490.sess"
+all_model_checkpoint_paths: "../output/Wordnet/Wordnet450.sess"
+all_model_checkpoint_paths: "../output/Wordnet/Wordnet460.sess"
+all_model_checkpoint_paths: "../output/Wordnet/Wordnet470.sess"
+all_model_checkpoint_paths: "../output/Wordnet/Wordnet480.sess"
+all_model_checkpoint_paths: "../output/Wordnet/Wordnet490.sess"
