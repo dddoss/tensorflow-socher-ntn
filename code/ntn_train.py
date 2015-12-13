@@ -12,9 +12,6 @@ def data_to_indexed(data, entities, relations):
     relation_to_index = {relations[i] : i for i in range(len(relations))}
     indexed_data = [(entity_to_index[data[i][0]], relation_to_index[data[i][1]],\
             entity_to_index[data[i][2]]) for i in range(len(data))]
-    for i in range(len(data)):
-        if entity_to_index[data[i][0]]>=len(entities):
-            print("BLAAAAH")
     return indexed_data
 
 def get_batch(batch_size, data, num_entities, corrupt_size):

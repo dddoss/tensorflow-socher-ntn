@@ -1,43 +1,41 @@
 import ntn_input
-import ntn_train
+import ntn
 import params
 import tensorflow as tf
 
-def do_eval(sess, eval_correct, batch_placeholders, label_placeholders, corrupt_placeholder, test_batches, test_labels):
-    true_count = 0.
-    num_examples = len(dataset)
-
-    feed_dict = fill_feed_dict(test_batches, test_labels, params.train_both, batch_placeholder, corrupt_placeholder)
-    true_count = sess.run(eval_correct, feed_dict)
-    precision = float(true_count) / float(num_examples)
-    return precision
+def data_to_indexed(data, entities, relations):
+    entity_to_index = {entities[i] : i for i in range(len(entities))}
+    relation_to_index = {relations[i] : i for i in range(len(relations))}
+    indexed_data = [(entity_to_index[data[i][0]], relation_to_index[data[i][1]],\
+            entity_to_index[data[i][2]], float(data[i][3])) for i in range(len(data))]
+    return indexed_data
 
 def fill_feed_dict(batches, labels, train_both, batch_placeholders, label_placeholders, corrupt_placeholder):
-    feed_dict = {corrupt_placeholder: (train_both and np.random.random()>0.5)}
+    feed_dict = {corrupt_placeholder: [train_both and np.random.random()>0.5]}
     for i in range(len(batch_placeholders)):
         feed_dict[batch_placeholders[i]] = batches[i]
     for i in range(len(label_placeholders)):
         feed_dict[label_placeholders[i]] = labels[i]
+    return feed_dict
 
-def evaluation(inference):
-    # get number of correct labels for the logits (if prediction is top 1 closest to actual)
-    correct = tf.nn.in_top_k(inference, labels, 1)
-    # cast tensor to int and return number of correct labels
-    return tf.reduce_sum(tf.cast(correct, tf.int32))
 
 #dataset is in the form (e1, R, e2, label)
-def data_to_relation_sets(dataset, num_relations):
+def data_to_relation_sets(data_batch, num_relations):
     batches = [[] for i in range(num_relations)]
     labels = [[] for i in range(num_relations)]
     for e1,r,e2,label in data_batch:
-        batches[r].append((e1,e2,e3))
-        labels[r].append(label)
+        batches[r].append((e1,e2,1))
+        labels[r].append([label])
     return (batches, labels)
 
 def run_evaluation():
-    test_data = ntn_input.load_test_data(params.data_path)
+    print(params.output_path)
+    print(tf.train.latest_checkpoint(params.output_path, 'checkpoint'))
     entities_list = ntn_input.load_entities(params.data_path)
-    relations_list = ntn_input.load_entities(params.data_path)
+    relations_list = ntn_input.load_relations(params.data_path)
+    test_data = ntn_input.load_test_data(params.data_path)
+    test_data = data_to_indexed(test_data, entities_list, relations_list)
+    batch_size= len(test_data)
     
     num_entities = len(entities_list)
     num_relations = len(relations_list)
@@ -45,17 +43,36 @@ def run_evaluation():
     slice_size = params.slice_size
     (init_word_embeds, entity_to_wordvec) = ntn_input.load_init_embeds(params.data_path)
     batches, labels = data_to_relation_sets(test_data, num_relations)
-    
-    with tf.Graph().as_default(),sess = tf.Session():
-        batch_placeholders = [tf.placeholder(tf.float32, shape=(4, None) for i in range(num_relations)]
-        label_placeholders = [tf.placeholder(tf.float32, shape=(1, None) for i in range(num_relations)]
-        corrupt_placeholder = tf.placeholder(tf.bool, shape=(1)) 
-        inference = ntn.inference(batch_placeholder, corrupt_placeholder, init_word_embeds, entity_to_wordvec, \
-                num_entities, num_relations, slice_size, is_eval=True, label_placeholders=label_placeholders) 
-        eval_correct = ntn_eval.evaluation(inference)
 
-        tf.train.saver.restore(sess, params.sess_path)
-        print do_eval(sess, eval_correct, batch_placeholders, label_placeholders, corrupt_placeholder, test_batches, test_labels)
+    
+    with tf.Graph().as_default():
+        sess = tf.Session()
+        batch_placeholders = [tf.placeholder(tf.float32, shape=(None, 3)) for i in range(num_relations)]
+        label_placeholders = [tf.placeholder(tf.float32, shape=(None, 1)) for i in range(num_relations)]
+        corrupt_placeholder = tf.placeholder(tf.bool, shape=(1)) 
+        inference = ntn.inference(batch_placeholders, corrupt_placeholder, init_word_embeds, entity_to_wordvec, \
+                num_entities, num_relations, slice_size, batch_size, True, label_placeholders) 
+        eval_correct = ntn.eval(inference)
+        saver = tf.train.Saver()
+
+        saver.restore(sess, params.output_path+'Wordnet450.sess')
+        print do_eval(sess, eval_correct, batch_placeholders, label_placeholders, corrupt_placeholder, batches, labels, batch_size)
+
+def do_eval(sess, eval_correct, batch_placeholders, label_placeholders, corrupt_placeholder, test_batches, test_labels, num_examples):
+    print "Starting do eval"
+    true_count = 0.
+
+    feed_dict = fill_feed_dict(test_batches, test_labels, params.train_both, batch_placeholders, label_placeholders, corrupt_placeholder)
+    #predictions,labels = sess.run(eval_correct, feed_dict)
+    true_count = sess.run(eval_correct, feed_dict)
+    print "True count: "+str(true_count)
+    #for i in range(len(predictions)):
+    #    if predictions[i]>0.5 and labels[i]==1:
+    #        true_count +=1
+    #    elif predictions[i]<0.5 and labels[i]==-1:
+    #        true_count +=1
+    precision = float(true_count) / float(num_examples)
+    return precision
                                            
 def getThresholds():
     dev_data = ntn_input.load_dev_data()
@@ -131,3 +148,6 @@ def getPredictions():
             predictions[i, 0] = -1
 
     return predictions
+
+if __name__=="__main__":
+    run_evaluation()

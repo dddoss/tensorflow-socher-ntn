@@ -25,7 +25,7 @@ def inference(batch_placeholders, corrupt_placeholder, init_word_embeds, entity_
 
     print("Calcing ent2word")
     #python list of tf vectors: i -> list of word indices cooresponding to entity i
-    ent2word = [tf.constant(entity_i) for entity_i in entity_to_wordvec]
+    ent2word = [tf.constant(entity_i)-1 for entity_i in entity_to_wordvec]
     #(num_entities, d) matrix where row i cooresponds to the entity embedding (word embedding average) of entity i
     print("Calcing entEmbed...")
     entEmbed = tf.pack([tf.reduce_mean(tf.gather(E, entword), 0) for entword in ent2word])
@@ -77,7 +77,7 @@ def inference(batch_placeholders, corrupt_placeholder, init_word_embeds, entity_
         if not is_eval:
             predictions.append(tf.pack([score_pos, score_neg]))
         else:
-            predictions.append(tf.pack([score_pos, tf.reshape(label_placeholders[r], [1,None])]))
+            predictions.append(tf.pack([score_pos, tf.reshape(label_placeholders[r], num_rel_r)]))
         #print("score_pos_and_neg: "+str(predictions[r].get_shape()))
 
 
@@ -108,7 +108,19 @@ def training(loss, learningRate):
 
 
 def eval(predictions):
-    pass
+    print("predictions "+str(predictions.get_shape()))
+    inference, labels = tf.split(0, 2, predictions)
+    inference = tf.transpose(inference)
+    inference = tf.concat((1-inference), inference)
+    labels = ((tf.cast(tf.squeeze(tf.transpose(labels)), tf.int32))+1)/2
+    print("inference "+str(inference.get_shape()))
+    print("labels "+str(labels.get_shape()))
+    # get number of correct labels for the logits (if prediction is top 1 closest to actual)
+    correct = tf.nn.in_top_k(inference, labels, 1)
+    # cast tensor to int and return number of correct labels
+    return tf.reduce_sum(tf.cast(correct, tf.int32))
+#    return (predictions, labels)
+
 
 
 

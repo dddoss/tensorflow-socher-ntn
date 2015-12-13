@@ -5,7 +5,7 @@ if data_number == 0: data_name = 'Wordnet'
 else: data_name = 'Freebase'
 
 data_path = '../data/'+data_name
-output_path = '../output/'
+output_path = '../output/'+data_name+'/'
 
 num_iter = 500
 train_both = False
