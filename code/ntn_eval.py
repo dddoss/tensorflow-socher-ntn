@@ -55,7 +55,9 @@ def run_evaluation():
         eval_correct = ntn.eval(inference)
         saver = tf.train.Saver()
 
-        saver.restore(sess, params.output_path+'Wordnet450.sess')
+        saver.restore(sess, params.output_path+'around100/Wordnet70.sess')
+        #init = tf.initialize_all_variables()
+        #sess.run(init)
         print do_eval(sess, eval_correct, batch_placeholders, label_placeholders, corrupt_placeholder, batches, labels, batch_size)
 
 def do_eval(sess, eval_correct, batch_placeholders, label_placeholders, corrupt_placeholder, test_batches, test_labels, num_examples):
@@ -64,13 +66,13 @@ def do_eval(sess, eval_correct, batch_placeholders, label_placeholders, corrupt_
 
     feed_dict = fill_feed_dict(test_batches, test_labels, params.train_both, batch_placeholders, label_placeholders, corrupt_placeholder)
     #predictions,labels = sess.run(eval_correct, feed_dict)
-    true_count = sess.run(eval_correct, feed_dict)
-    print "True count: "+str(true_count)
-    #for i in range(len(predictions)):
-    #    if predictions[i]>0.5 and labels[i]==1:
-    #        true_count +=1
-    #    elif predictions[i]<0.5 and labels[i]==-1:
-    #        true_count +=1
+    predictions, labels = sess.run(eval_correct, feed_dict)
+    print predictions
+    for i in range(len(predictions[0])):
+        if predictions[0][i]>0 and labels[0][i]==1:
+            true_count +=1.0
+        elif predictions[0][i]<0 and labels[0][i]==-1:
+            true_count +=1.0
     precision = float(true_count) / float(num_examples)
     return precision
                                            
