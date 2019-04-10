@@ -24,7 +24,7 @@ The goal is to predict whether two entities are related by relation R. For examp
 
 Socher introduces "Neural Tensor Networks" which differ from regular neural networks due to the way they relate entities directly to one another with the bilinear tensor product, which is the core operation in a Neural Tensor Network.
 
-Specifically, in a Neural Tensor Network the confidence in a directed edge of type R from e1 to e1 is defined as
+Specifically, in a Neural Tensor Network the confidence in a directed edge of type R from e1 to e2 is defined as
 
 g(e1, R, e2) = ...
 
